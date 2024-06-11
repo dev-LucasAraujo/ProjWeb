@@ -11,15 +11,15 @@ using ScreenSound.Banco;
 namespace ScreenSound.Migrations
 {
     [DbContext(typeof(ScreenSoundContext))]
-    [Migration("20231201060246_PopularTabela")]
-    partial class PopularTabela
+    [Migration("20231110171503_projetoInicial")]
+    partial class projetoInicial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "7.0.14")
+                .HasAnnotation("ProductVersion", "7.0.13")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
