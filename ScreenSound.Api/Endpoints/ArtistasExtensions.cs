@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ScreenSound.API.Endpoints.Requests;
+using ScreenSound.API.Response;
 using ScreenSound.Banco;
 using ScreenSound.Modelos;
 
@@ -23,8 +25,9 @@ namespace ScreenSound.API.Endpoints
                 return Results.Ok(artista);
             });
 
-            app.MapPost("/Artistas", ([FromServices] DAL<Artista> dal, [FromBody] Artista artista) =>
+            app.MapPost("/Artistas", ([FromServices] DAL<Artista> dal, [FromBody] ArtistaRequest artistaRequest) =>
             {
+                var artista = new Artista(artistaRequest.nome, artistaRequest.bio); 
                 dal.Adicionar(artista);
                 return Results.Ok();
             });
@@ -41,20 +44,26 @@ namespace ScreenSound.API.Endpoints
 
             });
 
-            app.MapPut("/Artistas", ([FromServices] DAL<Artista> dal, [FromBody] Artista artista) =>
-            {
-                var artistaAtualizar = dal.RecuperarPor(a => a.Id == artista.Id);
-                if (artista is null)
+            app.MapPut("/Artistas", ([FromServices] DAL<Artista> dal, [FromBody] ArtistaRequestEdit artistaRequestEdit) => {
+                var artistaAAtualizar = dal.RecuperarPor(a => a.Id == artistaRequestEdit.Id);
+                if (artistaAAtualizar is null)
                 {
                     return Results.NotFound();
                 }
-                artistaAtualizar.Nome = artista.Nome;
-                artistaAtualizar.Bio = artista.Bio;
-                artistaAtualizar.FotoPerfil = artista.FotoPerfil;
-                dal.Atualizar(artistaAtualizar);
-                return Results.NoContent();
-
+                artistaAAtualizar.Nome = artistaRequestEdit.nome;
+                artistaAAtualizar.Bio = artistaRequestEdit.bio;
+                dal.Atualizar(artistaAAtualizar);
+                return Results.Ok();
             });
+        }
+        private static ICollection<ArtistaResponse> EntityListToResponseList(IEnumerable<Artista> listaDeArtistas)
+        {
+            return listaDeArtistas.Select(a => EntityToResponse(a)).ToList();
+        }
+
+        private static ArtistaResponse EntityToResponse(Artista artista)
+        {
+            return new ArtistaResponse(artista.Id, artista.Nome, artista.Bio, artista.FotoPerfil);
         }
     }
 }
