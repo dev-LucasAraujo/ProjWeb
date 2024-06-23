@@ -3,6 +3,7 @@ using ScreenSound.API.Endpoints.Requests;
 using ScreenSound.API.Response;
 using ScreenSound.Banco;
 using ScreenSound.Modelos;
+using ScreenSound.Shared.Modelos.Modelos;
 
 namespace ScreenSound.API.Endpoints
 {
@@ -10,7 +11,6 @@ namespace ScreenSound.API.Endpoints
     {
         public static void AddEndPointsMusicas(this WebApplication app)
         {
-            #region Endpoint Músicas
             app.MapGet("/Musicas", ([FromServices] DAL<Musica> dal) =>
             {
                 return Results.Ok(dal.Listar());
@@ -27,8 +27,16 @@ namespace ScreenSound.API.Endpoints
 
             });
 
-            app.MapPost("/Musicas", ([FromServices] DAL<Musica> dal, [FromBody] Musica musica) =>
+            app.MapPost("/Musicas", ([FromServices] DAL<Musica> dal, [FromBody] MusicaRequest musicaRequest) =>
             {
+                var musica = new Musica(musicaRequest.nome)
+                {
+                    ArtistaId = musicaRequest.ArtistaId,
+                    AnoLancamento = musicaRequest.anoLancamento,
+                    Generos = musicaRequest.Generos is not null?
+                    GeneroRequestConvert(musicaRequest.Generos):
+                    new List<Genero>()
+                };
                 dal.Adicionar(musica);
                 return Results.Ok();
             });
@@ -56,8 +64,19 @@ namespace ScreenSound.API.Endpoints
                 dal.Atualizar(musicaAAtualizar);
                 return Results.Ok();
             });
-            #endregion
+            
         }
+
+        private static ICollection<Genero> GeneroRequestConvert(ICollection<GeneroRequest> generos)
+        {
+            return generos.Select(a => RequestToEntity(a)).ToList();
+        }
+
+        private static Genero RequestToEntity(GeneroRequest genero)
+        {
+            return new Genero() { Nome = genero.Nome, Descricao = genero.Descricao };
+        }
+
         private static ICollection<MusicaResponse> EntityListToResponseList(IEnumerable<Musica> musicaList)
         {
             return musicaList.Select(a => EntityToResponse(a)).ToList();
